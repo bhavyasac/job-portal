@@ -6,26 +6,29 @@ dotenv.config();
 import connectDB from './config/db.js';
 import * as Sentry from "@sentry/node";
 import { clerkWebhooks } from './controllers/webhooks.js';
-import bodyParser from 'body-parser';
+import companyRoutes from './routes/companyRoutes.js';
+import connectCloudinary from './config/cloudinary.js';
+// import bodyParser from 'body-parser';
 
 //initialize express
 const app = express()
 
 // connect to database
 await connectDB()
+await connectCloudinary()
 
 //middlewares
-app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-    next();
-});
+// app.use((req, res, next) => {
+//     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+//     next();
+// });
 
 app.use(cors())
+app.use(express.json())
 
 // Use raw body parser for /webhooks route BEFORE express.json()
-app.use('/webhooks', bodyParser.raw({ type: '*/*' }));
+// app.post("/webhooks", bodyParser.raw({ type: "application/json" }), clerkWebhooks);
 
-app.use(express.json())
 
 //routes
 app.get('/', (req, res) => {
@@ -33,7 +36,7 @@ app.get('/', (req, res) => {
     res.send("API working!");
 });
 app.post('/webhooks', clerkWebhooks);
-
+app.use('/api/company', companyRoutes);
 // port
 const PORT = process.env.PORT || 5000;
 
